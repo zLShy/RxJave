@@ -18,6 +18,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
 import rx.Observable;
@@ -34,23 +39,26 @@ public class MainActivity extends Activity {
     Context context;
     public static final String HOST = "http://www.weather.com.cn/data/sk/"; // 这是天气网站
     public static String[] CityCode = {"101270101", "101270102", "101270103", "101270104", "101270105", "101270106", "101270107", "101270108", "101270109", "101270110", "101270111", "101270112",
-            "101270113", "101270114", "101270115", "101270116","101270201","101270202","101270203","204"};
+            "101270113", "101270114", "101270115", "101270116", "101270201", "101270202", "101270203", "204"};
 
     public static String weatherUrl = "http://api.yytianqi.com/weatherhours?city=CH270101&key=qa8g37q96gpb86e2";
+    private TextView tv;
+    private ArrayList<String> lists = new ArrayList<String>();
 
-//    http://www.weather.com.cn/data/sk/101270101.html
+    //    http://www.weather.com.cn/data/sk/101270101.html
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_main);
 
         this.btn = (Button) findViewById(R.id.btn);
+        this.tv = (TextView) findViewById(R.id.weathertv);
 
         this.btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                Log.e("TGA",doNetTask(weatherUrl));
+                Log.e("TGA", doNetTask(weatherUrl));
                 getCityWeather();
 
                 Observable.just(new Stu("xiaoMing")).map(new Func1<Stu, String>() {
@@ -131,7 +139,7 @@ public class MainActivity extends Activity {
         }).cast(String.class).map(new Func1<String, String>() {
             @Override
             public String call(String s) {
-                return doNetTask(HOST+s+".html");
+                return doNetTask(HOST + s + ".html");
             }
         }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<String>() {
             @Override
@@ -170,6 +178,25 @@ public class MainActivity extends Activity {
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String body = new String(responseBody);
                 System.out.println(body);
+
+                if(body != null) {
+                    try {
+                        JSONObject object = new JSONObject(body);
+                        String data = object.getString("data");
+                        JSONObject jsonObject = new JSONObject(data);
+                        JSONArray array = jsonObject.getJSONArray("list");
+                        for (int i = 0;i<array.length();i++) {
+                            JSONObject object1 = array.getJSONObject(i);
+                            String qw = object1.getString("qw");
+                            String sj = object1.getString("sj");
+                            lists.add(qw);
+                        }
+
+                        tv.setText(lists.get(0));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
 
             }
 
