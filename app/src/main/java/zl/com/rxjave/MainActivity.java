@@ -52,6 +52,7 @@ public class MainActivity extends Activity {
 
                 Log.e("TGA",doNetTask(weatherUrl));
                 getCityWeather();
+
                 Observable.just(new Stu("xiaoMing")).map(new Func1<Stu, String>() {
 
                     @Override
